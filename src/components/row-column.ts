@@ -1,6 +1,7 @@
 import styled, { css } from 'styled-components';
+import { margins, Margins } from 'helpers/css-utils';
 
-type RowColumnProps = {
+type RowColumnProps = Margins & {
     grow?: boolean 
     spaceBetween?: boolean 
     alignCenter?: boolean 
@@ -26,6 +27,7 @@ const BasicDivCssConfig = styled.div<RowColumnProps>`
     ${ p => p.fullWidth && css`
         width: 100%;
     ` }
+    ${ p => margins( p ) }
 `;
 
 export const Row = styled( BasicDivCssConfig )`
