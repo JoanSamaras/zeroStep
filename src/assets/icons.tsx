@@ -6,6 +6,7 @@ import { ExclamationSolid as ExclamationSolidSVG } from '@styled-icons/zondicons
 import { InfoCircle as InfoCircleSVG } from '@styled-icons/boxicons-solid/InfoCircle';
 import { ArrowDropDownCircle as ArrowDropDownCircleSVG } from '@styled-icons/material-outlined/ArrowDropDownCircle';
 import { StopCircle as StopCircleSVG } from '@styled-icons/fa-solid/StopCircle';
+import { CheckCircle as CheckCircleSVG } from '@styled-icons/boxicons-solid/CheckCircle';
 
 type IconProps = {
     colour?: string
@@ -30,4 +31,9 @@ export const ArrowDownOutlinedIcon = styled( ArrowDropDownCircleSVG )<IconProps>
 export const StopCircleIcon = styled( StopCircleSVG )<IconProps>`
     height: ${ p => p.height ? p.height : imgHeights.primary };
     color: ${ p => p.colour ? p.colour : colours.danger5 };
+`;
+
+export const CheckCircleIcon = styled( CheckCircleSVG )<IconProps>`
+    height: ${ p => p.height ? p.height : imgHeights.primary };
+    color: ${ p => p.colour ? p.colour : colours.success5 };
 `;

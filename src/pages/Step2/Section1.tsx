@@ -12,13 +12,8 @@ import { InputAdornment, TextField } from '@material-ui/core';
 import { ErrorMessage } from 'components/error-msg';
 import { fontSizes } from 'design-system/font-sizes';
 import { Dialogue } from 'components/dialogue';
-
-const Wrapper = styled( Row )`
-    width: 55vw;
-    align-self: center;
-    flex-grow: 1;
-    padding: ${ spacings._8 };
-`;
+import { ArrowDownOutlinedIcon, CheckCircleIcon } from 'assets/icons';
+import { Header, Wrapper } from './common-styles';
 
 const Section1Wrapper = styled( Column )<{ section2visible: boolean }>`
     width: 100vw;
@@ -32,10 +27,6 @@ const IconPlaceholder = styled.div`
     display: flex;
     align-items: center;
     margin-left: 10vw;
-`;
-
-const Header = styled( Text )<{ size: 'h2' | 'h3' }>`
-    line-height: ${ p => p.size === 'h2' ? '3.5rem' : '2.5rem' };
 `;
 
 const HighlightedWord = styled( Text )`
@@ -59,22 +50,35 @@ const Link = styled( Text )`
     }
 `;
 
+const ProductIconPlaceholder = styled.div`
+    min-width: 4em; 
+    max-width: 6em; 
+    min-height: 4em; 
+    max-height: 6em; 
+    display: flex;
+
+    & img {
+        width: 100%;
+    }
+`;
+
 type Section1Props = {
-    section2visible: boolean
-    setSection2visible: ( v: boolean ) => void
+    productExists: boolean
+    setProductExists: ( v: boolean ) => void
 }
 
 export const Section1 = ( p: Section1Props ): JSX.Element => {
-    const { section2visible, setSection2visible } = p;
+    const { productExists, setProductExists } = p;
 
     const [ inputUrlId, setInputUrlId ] = useState( 'outlined-url-input' );
     const [ inputUrl, setInputUrl ] = useState( '' );
     const [ errorMsg, setErrorMsg ] = useState( '' );
+
     const [ inputAsin, setInputAsin ] = useState( '' );
     const [ inputAsinId, setInputAsinId ] = useState( 'outlined-asin-input' );
     const [ errorMsgAsin, setErrorMsgAsin ] = useState( '' );
 
-    const urlRegex  = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_.~#?&//=]*)/;
+    const urlRegex  = /(http|https):\/\/[\w-]+(\.[\w-]+)+([\w.,@?^=%&amp;:/~+#-]*[\w@?^=%&amp;/~+#-])?/;
 
     useEffect( () => {
         const errorExists = inputUrl && errorMsg;
@@ -85,13 +89,24 @@ export const Section1 = ( p: Section1Props ): JSX.Element => {
         if ( !errorExists ) {
             setErrorMsg( '' );
         }
+
+        if ( !inputUrl ) {
+            setProductExists( false );
+        }
     }, [ errorMsg, inputUrl ] );
 
     const validateInputUrl = (): void => {
         const isUrlValid = urlRegex.test( inputUrl );
 
+        console.log( isUrlValid );
+
         if ( !isUrlValid ) {
             setErrorMsg( 'Sorry, we didn\'t find product information at this URL.' );
+            setInputAsin( '' )
+            setProductExists( false );
+        } else {
+            setErrorMsg( '' );
+            setProductExists( true );
         }
     }
     
@@ -116,8 +131,27 @@ export const Section1 = ( p: Section1Props ): JSX.Element => {
 
     const [ dialogueOpen, setDialogueOpen ] = useState( false );
 
+    const validateInputAsin = (): void => {
+        const isAsinValid = false;
+
+        if ( !isAsinValid ) {
+            setErrorMsgAsin( 'Sorry, we didn\'t find product information. Try again.' );
+            setProductExists( false );
+        } else {
+            setProductExists( true );
+        }
+    }
+    
+    useEffect( () => {
+        if ( inputAsin ) {
+            const timer = setTimeout( () => validateInputAsin(), 1200 );
+
+            return () => clearTimeout( timer );
+        }
+    }, [ inputAsin ] );
+
     return (
-        <Section1Wrapper section2visible={ section2visible }>
+        <Section1Wrapper section2visible={ productExists }>
             <Row>
                 <IconPlaceholder><img src={ opinionMattersIcon } /></IconPlaceholder>
             </Row>
@@ -163,9 +197,34 @@ export const Section1 = ( p: Section1Props ): JSX.Element => {
                                         <ErrorMessage top='2.3rem' text={ errorMsg } />
                                     ) }  
                                 </Row>
+                                { productExists && !errorMsg && (
+                                    <Row top='3rem'>
+                                        <Column right={ spacings._2 }>
+                                            <ProductIconPlaceholder><img src={ 'https://www.seventhgeneration.com/sites/default/files/styles/1600w/public/2020-07/mbcampaign-hp-productcarouselpersonalcare-998x790.jpg?itok=EbJB9ky5' } /></ProductIconPlaceholder>
+                                        </Column>
+                                        <Column>
+                                            <Row alignCenter>
+                                                <Column right={ spacings._4 }><CheckCircleIcon height='4rem' /></Column>
+                                                <Column>
+                                                    <Text colour='dark' size='secondary' bottom={ spacings._2 }>
+                                                        Lorem Ipsum
+                                                    </Text>
+                                                    <Text colour='success' size='primary' weight='semiBold'>
+                                                        This is a valid product!
+                                                    </Text>
+                                                </Column>
+                                            </Row>
+                                        </Column>
+                                    </Row>
+                                ) }
                             </Column>
                             { errorMsg && (
-                                <Column left='4rem'>
+                                <Column 
+                                    left='4rem'
+                                    style={{
+                                        maxWidth: '40%'
+                                    }}
+                                >
                                     <Row alignCenter>
                                         <Header colour='extraDark' weight='semiBold' size='h3'>
                                             OR try to find manually the ASIN
@@ -173,7 +232,7 @@ export const Section1 = ( p: Section1Props ): JSX.Element => {
                                     </Row>
                                     <Row>
                                         <Input
-                                            error={ !!errorMsg && !!inputAsin }
+                                            error={ !!errorMsgAsin && !!inputAsin }
                                             id={ inputAsinId }
                                             label='ASIN goes here'
                                             variant='outlined'
@@ -197,10 +256,39 @@ export const Section1 = ( p: Section1Props ): JSX.Element => {
                                             <ErrorMessage top='2.3rem' text={ errorMsgAsin } />
                                         ) }  
                                     </Row>
+                                    { productExists && !errorMsgAsin && (
+                                        <Row top='3rem'>
+                                            <Column right={ spacings._2 }>
+                                                <ProductIconPlaceholder><img src={ 'https://www.seventhgeneration.com/sites/default/files/styles/1600w/public/2020-07/mbcampaign-hp-productcarouselpersonalcare-998x790.jpg?itok=EbJB9ky5' } /></ProductIconPlaceholder>
+                                            </Column>
+                                            <Column>
+                                                <Row alignCenter>
+                                                    <Column right={ spacings._4 }><CheckCircleIcon height='4rem' /></Column>
+                                                    <Column>
+                                                        <Text colour='dark' size='secondary' bottom={ spacings._2 }>
+                                                            Lorem Ipsum
+                                                        </Text>
+                                                        <Text colour='success' size='primary' weight='semiBold'>
+                                                            This is a valid product!
+                                                        </Text>
+                                                    </Column>
+                                                </Row>
+                                            </Column>
+                                        </Row>
+                                    ) }
                                 </Column>
                             ) }
                         </Row>
                         <Row grow />
+                        { productExists && (
+                            <Row 
+                                style={{
+                                    justifyContent: 'center'
+                                }}
+                            >
+                                <a href='#next'><ArrowDownOutlinedIcon height='5rem' /></a>
+                            </Row>
+                        ) }
                     </Column>
                 </StylesProvider>
             </Wrapper>

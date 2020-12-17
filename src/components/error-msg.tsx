@@ -12,6 +12,10 @@ const ImgPlaceholder = styled( Column )`
     height: ${ fontSizes.h2 };
 `;
 
+const Wrapper = styled( Row )`
+    flex-wrap: nowrap;
+`;
+
 type Props = Margins & {
     text: string | JSX.Element
 }
@@ -20,12 +24,12 @@ export const ErrorMessage = ( p: Props ): JSX.Element => {
     const { text, ...margins } = p;
     
     return (
-        <Row { ...margins } alignCenter>
+        <Wrapper { ...margins } alignCenter>
             <ImgPlaceholder right={ spacings._8 }><WarningIcon height='100%' colour={ colours.danger5 } /></ImgPlaceholder>
             { typeof text === 'string' 
                 ? <Text colour='danger' size='primary' weight='semiBold'>{ text }</Text>
                 : text
             }
-        </Row>
+        </Wrapper>
     )
 };

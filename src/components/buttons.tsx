@@ -20,7 +20,7 @@ const profileColourSettings = ( p: ButtonProfileType ) => {
     if ( p === 'primary' ) {
         return css`
             background-color: ${ colours.primary5 };
-            color: ${ colours.grey1 };
+            color: ${ colours.grey9 };
 
             :hover {
                 cursor: pointer;
@@ -63,6 +63,7 @@ export const Button = styled.button<ButtonStyleProps>`
     pointer-events: ${ p => p.disabled ? 'none' : 'unset' };
     padding: ${ spacings._4 } ${ spacings._6 };
     border: none;
+    text-transform: uppercase;
 
     ${ p => p.profile && profileColourSettings( p.profile ) }
     :focus {

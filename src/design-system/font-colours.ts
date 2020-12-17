@@ -9,5 +9,6 @@ export const fontColours = {
     black: colours.grey9,
     primary: colours.primary5,
     danger: colours.danger5,
-    warning: colours.warning5
+    warning: colours.warning5,
+    success: colours.success5
 };
