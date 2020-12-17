@@ -5,7 +5,7 @@ import { Text } from 'components/text';
 import { colours } from 'design-system/colours';
 import { spacings } from 'design-system/spacings';
 import { Dictionary } from 'helpers/types';
-import { StopCircleIcon, WarningIcon } from 'assets/icons';
+import { StopCircleIcon, InfoCircleIcon } from 'assets/icons';
 import { fontSizes } from 'design-system/font-sizes';
 
 const BGWrapper = styled( Column )<{ colourProfile: 'error' | 'info' | 'warning' }>`
@@ -29,7 +29,7 @@ const PaddedDiv = styled( Row )`
 
 const imgMap: Dictionary<JSX.Element> = {
     error: <StopCircleIcon height='100%' />,
-    warning: <WarningIcon height='100%' colour={ colours.primary5 } />
+    warning: <InfoCircleIcon height='100%' colour={ colours.primary5 } />
 }
 
 const ImgPlaceholder = styled( Column )`

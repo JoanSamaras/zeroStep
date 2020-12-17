@@ -34,17 +34,17 @@ const profileColourSettings = ( p: ButtonProfileType ) => {
     } else {
         return css`
             background-color: ${ colours.grey3 };
-            color: ${ colours.grey4 };
+            color: ${ colours.grey6 };
 
             :hover {
                 cursor: pointer;
                 background-color: ${ colours.grey5 };
-                color: ${ colours.grey5 };
+                color: ${ colours.grey1 };
             }
             :active {
                 cursor: pointer;
                 background-color: ${ colours.grey6 };
-                color: ${ colours.grey6 };
+                color: ${ colours.grey1 };
             }
         `
     }
