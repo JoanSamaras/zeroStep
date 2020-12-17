@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { colours } from 'design-system/colours';
-import { Step2 } from 'Step2';
+import { Step2 } from 'pages/Step2';
 
 const Wrapper = styled.div`
     display: flex;

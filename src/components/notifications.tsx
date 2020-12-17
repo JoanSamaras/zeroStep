@@ -48,7 +48,7 @@ export const NotificationMessage = ( p: Props ): JSX.Element => {
         <Row>
             <BGWrapper colourProfile={ p.colourProfile }>
                 <PaddedDiv alignCenter>
-                    <ImgPlaceholder right={ spacings._6 }>{ imgMap[ p.colourProfile ] }</ImgPlaceholder>
+                    <ImgPlaceholder right={ spacings._8 }>{ imgMap[ p.colourProfile ] }</ImgPlaceholder>
                     { typeof text === 'string' 
                         ? <Text colour='dark' size='primary' weight='bold'>{ text }</Text>
                         : text

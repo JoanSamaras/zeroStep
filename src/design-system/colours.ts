@@ -3,7 +3,7 @@
 
 export const colours = {
     primary1: '#FFF9CD',
-    primary2: '#FFF09C',
+    primary2: '#f6efd9',
     primary3: '#FFE66A',
     primary4: '#FFDC45',
     primary5: '#FFCC08',
