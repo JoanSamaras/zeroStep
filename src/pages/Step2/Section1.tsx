@@ -8,12 +8,13 @@ import { Text } from 'components/text';
 import { fontWeights } from 'design-system/font-weights';
 import { NotificationMessage } from 'components/notifications';
 import { StylesProvider } from '@material-ui/core/styles';
-import { InputAdornment, TextField } from '@material-ui/core';
+import { Backdrop, CircularProgress, InputAdornment, TextField } from '@material-ui/core';
 import { ErrorMessage } from 'components/error-msg';
 import { fontSizes } from 'design-system/font-sizes';
 import { Dialogue } from 'components/dialogue';
 import { ArrowDownOutlinedIcon, CheckCircleIcon } from 'assets/icons';
 import { Header, Wrapper } from './common-styles';
+import { useQuery, useQueryClient } from 'react-query';
 
 const Section1Wrapper = styled( Column )<{ section2visible: boolean }>`
     width: 100vw;
@@ -54,12 +55,21 @@ const ProductIconPlaceholder = styled.div`
     min-width: 4em; 
     max-width: 6em; 
     min-height: 4em; 
-    max-height: 6em; 
+    max-height: 8em; 
     display: flex;
 
     & img {
         width: 100%;
     }
+`;
+
+const ProductName = styled( Text )`
+    max-width: 13rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
 `;
 
 type Section1Props = {
@@ -73,12 +83,30 @@ export const Section1 = ( p: Section1Props ): JSX.Element => {
     const [ inputUrlId, setInputUrlId ] = useState( 'outlined-url-input' );
     const [ inputUrl, setInputUrl ] = useState( '' );
     const [ errorMsg, setErrorMsg ] = useState( '' );
+    const validUrl = 'https://www.amazon.com/One-Womens-Petite-Multivitamins-Count/dp/B004XSOJ02/ref=sxin_2_ac_d_rm?ac_md=1-1-dml0YW1pbnMgZm9yIHdvbWVu-ac_d_rm&cv_ct_cx=vitamins&dchild=1&keywords=vitamins&pd_rd_i=B004XSOJ02&pd_rd_r=44e6d03a-e543-4a9e-a6c2-15e32ff4a7ad&pd_rd_w=98b9v&pd_rd_wg=JFPxa&pf_rd_p=500f114e-2c2f-4a43-bcda-f4dcdd3832f9&pf_rd_r=KNPFJMTR8P46106XAR3B&psc=1&qid=1599642403&sr=1-2-12d4272d-8adb-4121-8624-135149aa9081';
 
     const [ inputAsin, setInputAsin ] = useState( '' );
     const [ inputAsinId, setInputAsinId ] = useState( 'outlined-asin-input' );
     const [ errorMsgAsin, setErrorMsgAsin ] = useState( '' );
+    const validAsin = 'B004QQ9LVS';
+
+    const [ loading, setLoading ] = useState( false );
 
     const urlRegex  = /(http|https):\/\/[\w-]+(\.[\w-]+)+([\w.,@?^=%&amp;:/~+#-]*[\w@?^=%&amp;/~+#-])?/;
+    const asinRegex = /^[A-Z0-9]*$/;
+
+    const queryClient = useQueryClient();
+    const { data, isLoading } = useQuery( 'data', () => fetch(
+        '/api/data'
+    ).then( () => queryClient.setQueryData( 
+        'data', 
+        {
+            name: ( inputUrl === validUrl || inputAsin === validAsin ) ? 'One A Day Women’s Petites Multivitamin,Supplement with Vitamin A, Vitamin C, Vitamin D, Vitamin E and Zinc for Immune Health Support, B Vitamins, Biotin, Folate (As Folic Acid) & More, 160 Count' : '',
+            icon: ( inputUrl === validUrl || inputAsin === validAsin ) ? 'https://images-na.ssl-images-amazon.com/images/I/81ExIbPHOxL._AC_SL1500_.jpg' : ''
+        } 
+    ) ) );
+
+    console.log( isLoading, data );
 
     useEffect( () => {
         const errorExists = inputUrl && errorMsg;
@@ -97,9 +125,7 @@ export const Section1 = ( p: Section1Props ): JSX.Element => {
 
     const validateInputUrl = (): void => {
         const isUrlValid = urlRegex.test( inputUrl );
-
-        console.log( isUrlValid );
-
+        
         if ( !isUrlValid ) {
             setErrorMsg( 'Sorry, we didn\'t find product information at this URL.' );
             setInputAsin( '' )
@@ -109,7 +135,7 @@ export const Section1 = ( p: Section1Props ): JSX.Element => {
             setProductExists( true );
         }
     }
-    
+
     useEffect( () => {
         if ( inputUrl ) {
             const timer = setTimeout( () => validateInputUrl(), 1200 );
@@ -132,7 +158,7 @@ export const Section1 = ( p: Section1Props ): JSX.Element => {
     const [ dialogueOpen, setDialogueOpen ] = useState( false );
 
     const validateInputAsin = (): void => {
-        const isAsinValid = false;
+        const isAsinValid = asinRegex.test( inputAsin );
 
         if ( !isAsinValid ) {
             setErrorMsgAsin( 'Sorry, we didn\'t find product information. Try again.' );
@@ -157,6 +183,11 @@ export const Section1 = ( p: Section1Props ): JSX.Element => {
             </Row>
             <Wrapper>
                 <StylesProvider injectFirst>
+                    { loading && (
+                        <Backdrop open={ loading }>
+                            <CircularProgress color='inherit' />
+                        </Backdrop>
+                    ) }
                     <Column top='2.5em'>
                         <Row>
                             <Text colour='primary' weight='bold' size='h1'>2nd Step</Text>
@@ -197,18 +228,18 @@ export const Section1 = ( p: Section1Props ): JSX.Element => {
                                         <ErrorMessage top='2.3rem' text={ errorMsg } />
                                     ) }  
                                 </Row>
-                                { productExists && !errorMsg && (
-                                    <Row top='3rem'>
+                                { productExists && data && data.icon && !errorMsg && (
+                                    <Row top='3rem' alignCenter>
                                         <Column right={ spacings._2 }>
-                                            <ProductIconPlaceholder><img src={ 'https://www.seventhgeneration.com/sites/default/files/styles/1600w/public/2020-07/mbcampaign-hp-productcarouselpersonalcare-998x790.jpg?itok=EbJB9ky5' } /></ProductIconPlaceholder>
+                                            <ProductIconPlaceholder><img src={ data.icon } /></ProductIconPlaceholder>
                                         </Column>
                                         <Column>
                                             <Row alignCenter>
                                                 <Column right={ spacings._4 }><CheckCircleIcon height='4rem' /></Column>
                                                 <Column>
-                                                    <Text colour='dark' size='secondary' bottom={ spacings._2 }>
-                                                        Lorem Ipsum
-                                                    </Text>
+                                                    <ProductName colour='dark' size='secondary' bottom={ spacings._2 }>
+                                                        { data.name }
+                                                    </ProductName>
                                                     <Text colour='success' size='primary' weight='semiBold'>
                                                         This is a valid product!
                                                     </Text>
@@ -256,18 +287,18 @@ export const Section1 = ( p: Section1Props ): JSX.Element => {
                                             <ErrorMessage top='2.3rem' text={ errorMsgAsin } />
                                         ) }  
                                     </Row>
-                                    { productExists && !errorMsgAsin && (
-                                        <Row top='3rem'>
+                                    { productExists && data && data.icon && !errorMsg && (
+                                        <Row top='3rem' alignCenter>
                                             <Column right={ spacings._2 }>
-                                                <ProductIconPlaceholder><img src={ 'https://www.seventhgeneration.com/sites/default/files/styles/1600w/public/2020-07/mbcampaign-hp-productcarouselpersonalcare-998x790.jpg?itok=EbJB9ky5' } /></ProductIconPlaceholder>
+                                                <ProductIconPlaceholder><img src={ data.icon } /></ProductIconPlaceholder>
                                             </Column>
                                             <Column>
                                                 <Row alignCenter>
                                                     <Column right={ spacings._4 }><CheckCircleIcon height='4rem' /></Column>
                                                     <Column>
-                                                        <Text colour='dark' size='secondary' bottom={ spacings._2 }>
-                                                            Lorem Ipsum
-                                                        </Text>
+                                                        <ProductName colour='dark' size='secondary' bottom={ spacings._2 }>
+                                                            { data.name }
+                                                        </ProductName>
                                                         <Text colour='success' size='primary' weight='semiBold'>
                                                             This is a valid product!
                                                         </Text>
