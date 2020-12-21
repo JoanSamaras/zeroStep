@@ -15,6 +15,7 @@ import { Dialogue } from 'components/dialogue';
 import { ArrowDownOutlinedIcon, CheckCircleIcon } from 'assets/icons';
 import { Header, Wrapper } from './common-styles';
 import { useQuery, useQueryClient } from 'react-query';
+import { zIndexes } from 'design-system/z-indexes';
 
 const Section1Wrapper = styled( Column )<{ section2visible: boolean }>`
     width: 100vw;
@@ -72,6 +73,14 @@ const ProductName = styled( Text )`
     text-overflow: ellipsis;
 `;
 
+const BackDropIndexed = styled( Backdrop )`
+    z-index: ${ zIndexes._1 };
+`;
+
+const Loader = styled( CircularProgress )`
+    color: ${ colours.primary5 };
+`;
+
 type Section1Props = {
     productExists: boolean
     setProductExists: ( v: boolean ) => void
@@ -90,21 +99,24 @@ export const Section1 = ( p: Section1Props ): JSX.Element => {
     const [ errorMsgAsin, setErrorMsgAsin ] = useState( '' );
     const validAsin = 'B004QQ9LVS';
 
-    const [ loading, setLoading ] = useState( false );
-
     const urlRegex  = /(http|https):\/\/[\w-]+(\.[\w-]+)+([\w.,@?^=%&amp;:/~+#-]*[\w@?^=%&amp;/~+#-])?/;
     const asinRegex = /^[A-Z0-9]*$/;
 
     const queryClient = useQueryClient();
-    const { data, isLoading } = useQuery( 'data', () => fetch(
-        '/api/data'
-    ).then( () => queryClient.setQueryData( 
-        'data', 
-        {
-            name: ( inputUrl === validUrl || inputAsin === validAsin ) ? 'One A Day Women’s Petites Multivitamin,Supplement with Vitamin A, Vitamin C, Vitamin D, Vitamin E and Zinc for Immune Health Support, B Vitamins, Biotin, Folate (As Folic Acid) & More, 160 Count' : '',
-            icon: ( inputUrl === validUrl || inputAsin === validAsin ) ? 'https://images-na.ssl-images-amazon.com/images/I/81ExIbPHOxL._AC_SL1500_.jpg' : ''
-        } 
-    ) ) );
+    const { data, status } = useQuery( [ 'data', inputUrl, inputAsin ], async () => {
+        await fetch( '/api/data' );
+        await new Promise( r => setTimeout( r, 1500 ) );
+        return queryClient.setQueryData( 
+            'data', 
+            {
+                name: ( inputUrl === validUrl || inputAsin === validAsin ) ? 'One A Day Women’s Petites Multivitamin,Supplement with Vitamin A, Vitamin C, Vitamin D, Vitamin E and Zinc for Immune Health Support, B Vitamins, Biotin, Folate (As Folic Acid) & More, 160 Count' : '',
+                icon: ( inputUrl === validUrl || inputAsin === validAsin ) ? 'https://images-na.ssl-images-amazon.com/images/I/81ExIbPHOxL._AC_SL1500_.jpg' : ''
+            }
+        );
+    },
+    {
+        enabled: urlRegex.test( inputUrl ) || asinRegex.test( inputAsin )
+    } );
 
     useEffect( () => {
         const errorExists = inputUrl && errorMsg;
@@ -130,7 +142,7 @@ export const Section1 = ( p: Section1Props ): JSX.Element => {
             setProductExists( false );
         } else {
             setErrorMsg( '' );
-            setProductExists( true );
+            setProductExists( inputUrl === validUrl );
         }
     }
 
@@ -162,7 +174,7 @@ export const Section1 = ( p: Section1Props ): JSX.Element => {
             setErrorMsgAsin( 'Sorry, we didn\'t find product information. Try again.' );
             setProductExists( false );
         } else {
-            setProductExists( true );
+            setProductExists( inputAsin === validAsin );
         }
     }
     
@@ -181,11 +193,11 @@ export const Section1 = ( p: Section1Props ): JSX.Element => {
             </Row>
             <Wrapper>
                 <StylesProvider injectFirst>
-                    { loading && (
-                        <Backdrop open={ loading }>
-                            <CircularProgress color='inherit' />
-                        </Backdrop>
-                    ) }
+                    { status === 'loading' && (
+                        <BackDropIndexed open>
+                            <Loader />
+                        </BackDropIndexed>
+                    )}
                     <Column top='2.5em'>
                         <Row>
                             <Text colour='primary' weight='bold' size='h1'>2nd Step</Text>
@@ -285,7 +297,7 @@ export const Section1 = ( p: Section1Props ): JSX.Element => {
                                             <ErrorMessage top='2.3rem' text={ errorMsgAsin } />
                                         ) }  
                                     </Row>
-                                    { productExists && data && data.icon && !errorMsg && (
+                                    { productExists && data && data.icon && !errorMsgAsin && (
                                         <Row top='3rem' alignCenter>
                                             <Column right={ spacings._2 }>
                                                 <ProductIconPlaceholder><img src={ data.icon } /></ProductIconPlaceholder>
