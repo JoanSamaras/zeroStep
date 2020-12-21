@@ -1,6 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
 import { colours } from 'design-system/colours';
+import { Step2 } from 'pages/Step2';
+import { QueryClient, QueryClientProvider } from 'react-query';
 
 const Wrapper = styled.div`
     display: flex;
@@ -10,9 +12,15 @@ const Wrapper = styled.div`
     max-width: 100vw;
 `;
 
+const queryClient = new QueryClient();
+
 const App = (): JSX.Element => {
     return (
-        <Wrapper />
+        <QueryClientProvider client={queryClient}>
+            <Wrapper>
+                <Step2 />
+            </Wrapper>
+        </QueryClientProvider>
     );
 };
 
